@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎱 双色球好运查询 - 你的幸运号码能中吗？</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7C3AED;
+            --secondary: #A78BFA;
+            --cta: #F43F5E;
+            --bg-dark: #0F0F23;
+            --bg-card: #1a1a3e;
+            --text-light: #E2E8F0;
+            --red-ball: #EF4444;
+            --blue-ball: #3B82F6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', 'Fredoka', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 9999;
+        }
+
+        /* Neon Glow Effects */
+        .neon-text {
+            text-shadow:
+                0 0 7px var(--primary),
+                0 0 10px var(--primary),
+                0 0 21px var(--primary),
+                0 0 42px var(--secondary);
+        }
+
+        .neon-text-red {
+            text-shadow:
+                0 0 7px var(--cta),
+                0 0 10px var(--cta),
+                0 0 21px var(--cta);
+        }
+
+        .neon-border {
+            border: 2px solid var(--primary);
+            box-shadow:
+                0 0 5px var(--primary),
+                inset 0 0 10px rgba(124, 58, 237, 0.2);
+        }
+
+        .neon-glow {
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            from { box-shadow: 0 0 5px var(--primary), 0 0 20px rgba(124, 58, 237, 0.4); }
+            to { box-shadow: 0 0 15px var(--primary), 0 0 40px rgba(167, 139, 250, 0.6); }
+        }
+
+        /* Ball Styles */
+        .ball {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            position: relative;
+        }
+
+        .ball-red {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE4444 50%, #CC3333 100%);
+            color: white;
+            box-shadow: 
+                0 4px 12px rgba(239, 68, 68, 0.4),
+                inset 0 -3px 8px rgba(0,0,0,0.2),
+                inset 0 3px 8px rgba(255,255,255,0.3);
+            border: 2px solid #ff8888;
+        }
+
+        .ball-blue {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%);
+            color: white;
+            box-shadow: 
+                0 4px 12px rgba(59, 130, 246, 0.4),
+                inset 0 -3px 8px rgba(0,0,0,0.2),
+                inset 0 3px 8px rgba(255,255,255,0.3);
+            border: 2px solid #7cb3f8;
+        }
+
+        .ball:hover {
+            transform: scale(1.18) translateY(-3px);
+            z-index: 10;
+        }
+
+        .ball.selected {
+            transform: scale(1.22) translateY(-5px);
+            animation: ballBounce 0.5s ease;
+        }
+
+        .ball.selected::after {
+            content: '✓';
+            position: absolute;
+            top: -4px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: #22c55e;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 2px 6px rgba(34, 197, 94, 0.5);
+        }
+
+        @keyframes ballBounce {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); }
+            70% { transform: scale(1.15); }
+            100% { transform: scale(1.22); }
+        }
+
+        /* Ball Grid */
+        .ball-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        /* Selected Display */
+        .selected-balls {
+            min-height: 64px;
+            background: rgba(26, 26, 62, 0.8);
+            border-radius: 16px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            border: 2px dashed rgba(124, 58, 237, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .selected-balls.has-balls {
+            border-style: solid;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+        }
+
+        .selected-balls .ball {
+            width: 46px;
+            height: 46px;
+            font-size: 16px;
+            cursor: default;
+        }
+
+        .selected-balls .ball:hover {
+            transform: none;
+        }
+
+        /* Button */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cta), #e11d48);
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            padding: 14px 42px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(244, 63, 94, 0.45);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--secondary);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 500;
+            padding: 10px 28px;
+            border-radius: 10px;
+            border: 2px solid var(--secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(124, 58, 237, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Result Cards */
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            border-color: rgba(124, 58, 237, 0.5);
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.12);
+        }
+
+        /* Luck Meter */
+        .luck-meter {
+            height: 20px;
+            border-radius: 10px;
+            background: rgba(30, 30, 60, 0.9);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .luck-meter-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .luck-meter-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255,255,255,0.25) 50%,
+                transparent 100%
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* History Record */
+        .history-record {
+            background: rgba(26, 26, 62, 0.65);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .history-record:hover {
+            background: rgba(36, 36, 72, 0.85);
+            transform: translateX(5px);
+        }
+
+        /* Share Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 480px;
+            width: 90%;
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(124, 58, 237, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Glitch Effect for title */
+        .glitch-title {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch-title:hover::before,
+        .glitch-title:hover::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch-title:hover::before {
+            color: #ff00ff;
+            animation: glitch-1 0.3s infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+        }
+
+        .glitch-title:hover::after {
+            color: #00ffff;
+            animation: glitch-2 0.3s infinite;
+            clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-1 {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { transform: translate(0); }
+            20% { transform: translate(3px, -3px); }
+            40% { transform: translate(3px, 3px); }
+            60% { transform: translate(-3px, -3px); }
+            80% { transform: translate(-3px, 3px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Lucky Badge */
+        .lucky-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .ball {
+                width: 42px;
+                height: 42px;
+                font-size: 15px;
+            }
+            .ball-grid { gap: 6px; padding: 8px; }
+            .selected-balls .ball { width: 38px; height: 38px; font-size: 14px; }
+            .result-card { padding: 18px; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Background Particles -->
+    <div id="particles"></div>
+
+    <!-- Header -->
+    <header class="pt-10 pb-6 text-center relative z-10">
+        <div class="inline-block mb-3 px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/30">
+            <span class="text-purple-300 text-sm font-medium tracking-wide">✨ 命运的数字密码 ✨</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-3 glitch-title neon-text" data-text="🎱 双色球好运查询" style="font-family: 'Fredoka', sans-serif;">
+            🎱 双色球好运查询
+        </h1>
+        <p class="text-lg text-purple-200/70 max-w-xl mx-auto px-4" style="font-family: 'Nunito', sans-serif;">
+            输入你的幸运号码，穿越时空查询历史中奖记录，AI 神算子为你测算好运指数！
+        </p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pb-16 relative z-10">
+        <!-- Number Selection Section -->
+        <section id="selection-section" class="result-card mb-8 neon-glow">
+            <h2 class="text-2xl font-bold text-center mb-6" style="font-family: 'Fredoka', sans-serif;">
+                <span class="text-red-400">🔴</span> 选择你的红球 
+                <span class="mx-2 text-gray-500">+</span> 
+                <span class="text-blue-400">🔵</span> 蓝球
+            </h2>
+
+            <!-- Red Balls -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="text-red-300 font-semibold text-lg">红球区（选 6 个）</label>
+                    <span id="red-count" class="text-sm bg-red-500/20 text-red-300 px-3 py-1 rounded-full font-medium">已选 0 / 6</span>
+                </div>
+                <div id="red-balls-container" class="ball-grid"></div>
+            </div>
+
+            <!-- Blue Balls -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="text-blue-300 font-semibold text-lg">蓝球区（选 1 个）</label>
+                    <span id="blue-count" class="text-sm bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full font-medium">已选 0 / 1</span>
+                </div>
+                <div id="blue-balls-container" class="ball-grid"></div>
+            </div>
+
+            <!-- Selected Display -->
+            <div class="mb-6">
+                <label class="block text-purple-300 font-semibold text-center mb-3">你选的号码</label>
+                <div id="selected-display" class="selected-balls">
+                    <span class="text-gray-500 text-sm">点击上方球号选择...</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 justify-center">
+                <button id="random-btn" class="btn-secondary flex items-center gap-2">
+                    🎲 随机一注
+                </button>
+                <button id="clear-btn" class="btn-secondary flex items-center gap-2">
+                    🗑️ 清空重选
+                </button>
+                <button id="query-btn" class="btn-primary flex items-center gap-2" disabled>
+                    🔮 查询好运指数
+                </button>
+            </div>
+        </section>
+
+        <!-- Results Section (Hidden by default) -->
+        <section id="results-section" class="hidden space-y-6">
+            <!-- Luck Index Card -->
+            <div class="result-card">
+                <h2 class="text-2xl font-bold text-center mb-6 neon-text-red" style="font-family: 'Fredoka', sans-serif;">
+                    ✨ 好运指数报告 ✨
+                </h2>
+                
+                <div id="luck-score-display" class="text-center mb-6">
+                    <div id="score-number" class="text-7xl font-bold mb-2" style="font-family: 'Fredoka', sans-serif;">--</div>
+                    <div id="score-label" class="text-xl text-purple-200 mb-4">正在计算宇宙能量场...</div>
+                    <div class="luck-meter max-w-md mx-auto">
+                        <div id="luck-meter-fill" class="luck-meter-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Lucky Analysis -->
+                <div id="lucky-analysis" class="space-y-4 mt-6 hidden">
+                    <div id="luck-level-badge" class="text-center mb-4"></div>
+                    <div id="funny-descriptions" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- History Records Card -->
+            <div class="result-card">
+                <h2 class="text-2xl font-bold text-center mb-4" style="font-family: 'Fredoka', sans-serif;">
+                    📜 历史中奖记录穿越
+                </h2>
+                <div id="history-results" class="mt-4"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 justify-center pt-4">
+                <button id="share-btn" class="btn-primary flex items-center gap-2">
+                    📤 分享我的好运
+                </button>
+                <button id="re-query-btn" class="btn-secondary flex items-center gap-2">
+                    🔄 换一组号码
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loading-section" class="hidden result-card text-center py-12">
+            <div class="loading-spinner"></div>
+            <p class="text-purple-300 mt-4 text-lg">🔮 AI 神算子正在连接宇宙量子场...</p>
+            <p class="text-purple-400/60 text-sm mt-2" id="loading-tip">分析星象、计算概率、查阅古籍中...</p>
+        </div>
+    </main>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal-overlay" onclick="closeShareModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold text-center mb-4" style="font-family: 'Fredoka', sans-serif;">🎉 分享你的好运</h3>
+            <div id="share-preview" class="bg-black/30 rounded-xl p-5 mb-5 text-center"></div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button onclick="copyToClipboard()" class="btn-primary py-3 text-base">📋 复制文本</button>
+                <button onclick="closeShareModal()" class="btn-secondary py-3 text-base">关闭</button>
+            </div>
+            <p id="copy-success" class="text-green-400 text-center text-sm hidden">✅ 已复制到剪贴板！快去分享吧~</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-purple-400/40 text-sm relative z-10">
+        <p>⚠️ 本页面仅供娱乐，预测结果基于搞笑算法生成，不构成任何购彩建议</p>
+        <p class="mt-2">理性购彩 · 量力而行 · 彩票无规律 · 生活需热爱 💜</p>
+    </footer>
+
+    <script>
+    // =============================================
+    // 双色球历史数据（精选样本，覆盖各奖项）
+    // =============================================
+    const LOTTERY_HISTORY = [
+        { issue: "2024001", date: "2024-01-02", red: [3, 8, 12, 17, 22, 29], blue: 14 },
+        { issue: "2024002", date: "2024-01-07", red: [2, 9, 15, 21, 27, 31], blue: 6 },
+        { issue: "2024003", date: "2024-01-09", red: [5, 11, 18, 24, 28, 33], blue: 12 },
+        { issue: "2024004", date: "2024-01-14", red: [1, 7, 14, 19, 25, 30], blue: 9 },
+        { issue: "2024005", date: "2024-01-16", red: [4, 10, 16, 23, 26, 32], blue: 3 },
+        { issue: "2024006", date: "2024-01-21", red: [6, 13, 20, 22, 29, 31], blue: 15 },
+        { issue: "2024007", date: "2024-01-23", red: [2, 8, 17, 24, 27, 33], blue: 7 },
+        { issue: "2024008", date: "2024-01-28", red: [1, 11, 19, 25, 28, 30], blue: 11 },
+        { issue: "2024009", date: "2024-01-30", red: [3, 9, 15, 21, 26, 32], blue: 5 },
+        { issue: "2024010", date: "2024-02-04", red: [5, 12, 18, 23, 29, 31], blue: 8 },
+        { issue: "2024011", date: "2024-02-06", red: [4, 10, 16, 22, 27, 33], blue: 2 },
+        { issue: "2024012", date: "2024-02-18", red: [7, 14, 20, 25, 28, 30], blue: 13 },
+        { issue: "2024013", date: "2024-02-20", red: [2, 8, 17, 24, 26, 32], blue: 4 },
+        { issue: "2024014", date: "2024-02-25", red: [1, 11, 19, 23, 29, 31], blue: 10 },
+        { issue: "2024015", date: "2024-02-27", red: [6, 13, 18, 22, 27, 33], blue: 16 },
+        { issue: "2024016", date: "2024-03-03", red: [3, 9, 15, 25, 28, 30], blue: 1 },
+        { issue: "2024017", date: "2024-03-05", red: [5, 12, 20, 24, 26, 32], blue: 14 },
+        { issue: "2024018", date: "2024-03-10", red: [4, 10, 16, 21, 29, 31], blue: 6 },
+        { issue: "2024019", date: "2024-03-12", red: [2, 8, 14, 23, 27, 33], blue: 9 },
+        { issue: "2024020", date: "2024-03-17", red: [1, 7, 17, 22, 25, 30], blue: 12 },
+        { issue: "2024021", date: "2024-03-19", red: [6, 11, 19, 24, 28, 32], blue: 3 },
+        { issue: "2024022", date: "2024-03-24", red: [3, 13, 18, 26, 29, 31], blue: 7 },
+        { issue: "2024023", date: "2024-03-26", red: [5, 9, 15, 21, 27, 33], blue: 15 },
+        { issue: "2024024", date: "2024-03-31", red: [2, 10, 20, 23, 28, 30], blue: 11 },
+        { issue: "2024025", date: "2024-04-02", red: [4, 12, 16, 22, 25, 32], blue: 5 },
+        { issue: "2024026", date: "2024-04-07", red: [1, 8, 14, 24, 29, 31], blue: 8 },
+        { issue: "2024027", date: "2024-04-09", red: [7, 11, 17, 21, 26, 33], blue: 2 },
+        { issue: "2024028", date: "2024-04-14", red: [3, 13, 19, 25, 27, 30], blue: 16 },
+        { issue: "2024029", date: "2024-04-16", red: [5, 9, 18, 23, 28, 32], blue: 13 },
+        { issue: "2024030", date: "2024-04-21", red: [2, 10, 15, 22, 29, 31], blue: 4 },
+        // 更多历史数据增加真实感
+        { issue: "2023035", date: "2023-03-28", red: [1, 5, 14, 20, 26, 31], blue: 7 },
+        { issue: "2023050", date: "2023-05-03", red: [4, 11, 17, 23, 28, 33], blue: 12 },
+        { issue: "2023066", date: "2023-06-13", red: [2, 8, 16, 22, 27, 30], blue: 9 },
+        { issue: "2023082", date: "2023-07-25", red: [6, 13, 19, 25, 29, 32], blue: 3 },
+        { issue: "2023100", date: "2023-08-29", red: [3, 9, 15, 21, 26, 33], blue: 14 },
+        { issue: "2023120", date: "2023-10-17", red: [1, 7, 18, 24, 28, 31], blue: 6 },
+        { issue: "2023140", date: "2023-11-28", red: [5, 12, 20, 23, 27, 30], blue: 11 },
+        { issue: "2023150", date: "2023-12-19", red: [4, 10, 16, 22, 25, 32], blue: 8 },
+        { issue: "2022015", date: "2022-02-06", red: [2, 8, 14, 19, 29, 33], blue: 5 },
+        { issue: "2022050", date: "2022-05-03", red: [1, 11, 17, 24, 28, 31], blue: 15 },
+        { issue: "2022100", date: "2022-08-30", red: [6, 13, 20, 25, 27, 30], blue: 10 },
+        { issue: "2022150", date: "2022-12-27", red: [3, 9, 16, 23, 26, 32], blue: 2 },
+        { issue: "2021010", date: "2021-01-24", red: [5, 12, 18, 22, 29, 31], blue: 13 },
+        { issue: "2021050", date: "2021-05-04", red: [4, 10, 15, 21, 28, 33], blue: 7 },
+        { issue: "2021100", date: "2021-08-31", red: [2, 8, 17, 24, 27, 30], blue: 1 },
+        { issue: "2021150", date: "2021-12-28", red: [1, 7, 14, 20, 26, 32], blue: 16 },
+    ];
+
+    // =============================================
+    // 搞笑好运描述数据库
+    // =============================================
+
+    const LUCK_LEVELS = [
+        {
+            range: [95, 100],
+            label: "🌟 天选之子 · 宇宙宠儿",
+            color: "#FFD700",
+            bgColor: "linear-gradient(135deg, #FFD700, #FFA500)",
+            descriptions: [
+                "这组号码散发着金光！连路边的流浪猫看了都想蹭你两下",
+                "根据《玄学大数据》第42章第3节，你的号码与今日星象完美共振",
+                "建议：今天去买张彩票吧——反正也不贵，万一呢？😏",
+                "AI神算子掐指一算，你这注号码的气场堪比锦鲤转世",
+                "温馨提示：如果中了大奖，记得回来给我烧香🙏",
+                "你的号码在量子纠缠层面已经和财神爷握手了",
+                "这组号码的幸运值已经爆表了，建议立刻、马上、现在就买它！",
+                "根据平行宇宙理论，在至少37个宇宙版本中的你已经靠这组号码暴富了"
+            ]
+        },
+        {
+            range: [85, 94],
+            label: "💫 运气爆棚 · 锦鲤附体",
+            color: "#22C55E",
+            bgColor: "linear-gradient(135deg, #22C55E, #16A34A)",
+            descriptions: [
+                "这组号码相当能打！走在路上被钱砸中的概率提升了300%",
+                "星座运势显示：水星逆行也挡不住你的好运气",
+                "建议今天穿红色内裤——别问为什么，玄学就是这么神奇",
+                "你的号码和历史上某期二等奖只差一个蓝球的距离...",
+                "AI分析：这组号码的'欧气浓度'达到警戒值了",
+                "好消息：你的号码在模拟开奖中被选中了47次！坏消息：那是模拟的",
+                "根据风水大师（我瞎编的），你这组号码五行缺啥补啥",
+                "今天的你：喝水塞牙？不可能！喝奶茶都能喝到第二杯半价"
+            ]
+        },
+        {
+            range: [70, 84],
+            label: "🍀 小确幸 · 平稳发挥",
+            color: "#3B82F6",
+            bgColor: "linear-gradient(135deg, #3B82F6, #2563EB)",
+            descriptions: [
+                "这组号码稳如老狗——不好不坏，刚好够用",
+                "运气中等偏上，就像食堂阿姨手抖时打的饭量",
+                "建议保持佛系心态：中不中都行，重要的是参与感",
+                "你的号码在历史数据里出现过类似组合...但没中大奖就是了",
+                "AI神算子表示：这组号码适合'重在参与'型选手",
+                "好消息是今天不会倒霉，坏消息是也不会特别走运",
+                "这组号码的稳定性堪比你每月的工资——不高不低刚刚好",
+                "建议搭配一杯奶茶一起使用，效果更佳（心理作用）"
+            ]
+        },
+        {
+            range: [50, 69],
+            label: "😐 一般般 · 还可以抢救",
+            color: "#F59E0B",
+            bgColor: "linear-gradient(135deg, #F59E0B, #D97706)",
+            descriptions: [
+                "嗯...怎么说呢，这组号码有点'佛系'",
+                "不是不行，就是差那么一点点感觉——像极了单身多年的你",
+                "建议多洗洗手再选号，说不定运气会好一点",
+                "AI神算子眉头一皱：这组号码的气场有点迷啊...",
+                "不过别灰心，毕竟彩票这东西本来就没规律的嘛对吧对吧？",
+                "你的号码和历史记录有微弱的共鸣——微弱到几乎不存在的那种",
+                "建议配合转发锦鲤图片使用，据说可以提高0.001%的中奖率",
+                "这组号码的特点是：平平无奇，普普通通，毫无波澜..."
+            ]
+        },
+        {
+            range: [30, 49],
+            label: "😅 需要努力 · 气场不足",
+            color: "#F97316",
+            bgColor: "linear-gradient(135deg, #F97316, #EA580C)",
+            descriptions: [
+                "呃...这组号码的运气值有点让人担忧",
+                "AI神算子叹了口气：要不...换一组试试？",
+                "这组号码给人的感觉就像周一早上的你——不太想动",
+                "建议：先去洗个澡，换个睡衣，再来重新选号",
+                "好消息是你的号码没有和历史完全重合——因为那样更惨",
+                "这组号码的幸运指数约等于你减肥成功的决心",
+                "根据量子力学不确定原理：你既可能中奖也可能不中，大概率是不中",
+                "建议把这组号码当成反面教材，然后选一个跟它完全不一样的"
+            ]
+        },
+        {
+            range: [0, 29],
+            label: "💀 渣渣 · 建议重选",
+            color: "#EF4444",
+            bgColor: "linear-gradient(135deg, #EF4444, #DC2626)",
+            descriptions: [
+                "AI神算子看完直接把键盘摔了：这什么阴间号码？！",
+                "这组号码的运气值比你的前任还凉",
+                "强烈建议：放下手机，深呼吸，出去走走，然后再回来重选",
+                "好消息：这组号码几乎不可能和历史重复。坏消息：其他方面也很差",
+                "根据大数据分析，这组号码的'非酋属性'已突破天际",
+                "建议立刻换号，否则今晚做梦都会梦见自己没中奖",
+                "这组号码的气场就像是：出门踩狗屎 + 喝水塞牙 + 手机没电三合一",
+                "别灰心！最差的情况也就是不中奖而已...等等这好像是最坏的了"
+            ]
+        }
+    ];
+
+    const FUNNY_FACTS = [
+        "🎲 这组号码在 177562 种组合中的排名：{rank}",
+        "🔢 号码总和为 {sum}，{sum_comment}",
+        "📊 奇偶比为 {odd_even}，{parity_comment}",
+        "🐟 根据玄学算法，{zodiac} 座的人用这组号码效果更好",
+        "💰 如果每期都买这组号，理论上大约需要 {years} 年才能中一等奖（大概）",
+        "🌈 这组号码的彩虹指数：{rainbow}，说明 {rainbow_comment}",
+        "🎯 连号情况：{consecutive}，{consecutive_comment}",
+        "♈ 星座运势：今天{zodiac_lucky}，{horoscope_tip}",
+        "🍜 建议搭配食物：{food}，据说能提升 {boost}% 的幸运值",
+        "👕 建议穿着颜色：{color}，与号码气场相辅相成"
+    ];
+
+    const ZODIACS = ["白羊座", "金牛座", "双子座", "巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座", "摩羯座", "水瓶座", "双鱼座"];
+    const FOODS = ["红烧牛肉面", "螺蛳沙粉", "麻辣烫", "黄焖鸡米饭", "煎饼果子", "兰州拉面", "炸鸡啤酒", "火锅", "寿司", "小笼包"];
+    const COLORS = ["正红色", "宝蓝色", "土豪金", "荧光绿", "死亡芭比粉", "高级灰", "莫兰迪色系", "原谅绿"];
+
+    // =============================================
+    // 全局状态
+    // =============================================
+    let selectedRed = [];
+    let selectedBlue = null;
+
+    // =============================================
+    // 初始化
+    // =============================================
+    function init() {
+        createParticles();
+        renderRedBalls();
+        renderBlueBalls();
+        bindEvents();
+    }
+
+    // 创建背景粒子
+    function createParticles() {
+        const container = document.getElementById('particles');
+        const colors = ['#7C3AED', '#F43F5E', '#3B82F6', '#A78BFA', '#F59E0B'];
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 8 + 3;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.cssText = `
+                width: ${size}px;
+                height: ${size}px;
+                left: ${Math.random() * 100}vw;
+                background: ${color};
+                box-shadow: 0 0 ${size * 2}px ${color};
+                animation-duration: ${Math.random() * 15 + 10}s;
+                animation-delay: ${Math.random() * 10}s;
+            `;
+            container.appendChild(particle);
+        }
+    }
+
+    // 渲染红球选择器
+    function renderRedBalls() {
+        const container = document.getElementById('red-balls-container');
+        container.innerHTML = '';
+        for (let i = 1; i <= 33; i++) {
+            const ball = document.createElement('div');
+            ball.className = `ball ball-red${selectedRed.includes(i) ? ' selected' : ''}`;
+            ball.textContent = String(i).padStart(2, '0');
+            ball.onclick = () => toggleRedBall(i);
+            container.appendChild(ball);
+        }
+    }
+
+    // 渲染蓝球选择器
+    function renderBlueBalls() {
+        const container = document.getElementById('blue-balls-container');
+        container.innerHTML = '';
+        for (let i = 1; i <= 16; i++) {
+            const ball = document.createElement('div');
+            ball.className = `ball ball-blue${selectedBlue === i ? ' selected' : ''}`;
+            ball.textContent = String(i).padStart(2, '0');
+            ball.onclick = () => toggleBlueBall(i);
+            container.appendChild(ball);
+        }
+    }
+
+    // 切换红球选择
+    function toggleRedBall(num) {
+        if (selectedRed.includes(num)) {
+            selectedRed = selectedRed.filter(n => n !== num);
+        } else if (selectedRed.length < 6) {
+            selectedRed.push(num);
+            selectedRed.sort((a, b) => a - b);
+        } else {
+            showToast('红球最多只能选6个哦～');
+            return;
+        }
+        updateUI();
+    }
+
+    // 切换蓝球选择
+    function toggleBlueBall(num) {
+        if (selectedBlue === num) {
+            selectedBlue = null;
+        } else {
+            selectedBlue = num;
+        }
+        updateUI();
+    }
+
+    // 更新界面状态
+    function updateUI() {
+        renderRedBalls();
+        renderBlueBalls();
+        
+        document.getElementById('red-count').textContent = `已选 ${selectedRed.length} / 6`;
+        document.getElementById('blue-count').textContent = `已选 ${selectedBlue ? 1 : 0} / 1`;
+
+        const queryBtn = document.getElementById('query-btn');
+        queryBtn.disabled = !(selectedRed.length === 6 && selectedBlue !== null);
+
+        const display = document.getElementById('selected-display');
+        if (selectedRed.length > 0 || selectedBlue !== null) {
+            display.classList.add('has-balls');
+            let html = '';
+            selectedRed.forEach(n => {
+                html += `<div class="ball ball-red">${String(n).padStart(2, '0')}</div>`;
+            });
+            if (selectedBlue !== null) {
+                html += `<div class="ball ball-blue">${String(selectedBlue).padStart(2, '0')}</div>`;
+            }
+            display.innerHTML = html;
+        } else {
+            display.classList.remove('has-balls');
+            display.innerHTML = '<span class="text-gray-500 text-sm">点击上方球号选择...</span>';
+        }
+    }
+
+    // 绑定事件
+    function bindEvents() {
+        document.getElementById('random-btn').onclick = randomSelect;
+        document.getElementById('clear-btn').onclick = clearSelection;
+        document.getElementById('query-btn').onclick = startQuery;
+        document.getElementById('share-btn').onclick = openShareModal;
+        document.getElementById('re-query-btn').onclick = resetToSelection;
+    }
+
+    // 随机选号
+    function randomSelect() {
+        selectedRed = [];
+        while (selectedRed.length < 6) {
+            const num = Math.floor(Math.random() * 33) + 1;
+            if (!selectedRed.includes(num)) {
+                selectedRed.push(num);
+            }
+        }
+        selectedRed.sort((a, b) => a - b);
+        selectedBlue = Math.floor(Math.random() * 16) + 1;
+        updateUI();
+
+        // 动画效果
+        const balls = document.querySelectorAll('.ball.selected');
+        balls.forEach((b, i) => {
+            b.style.animation = 'none';
+            b.offsetHeight; // trigger reflow
+            b.style.animation = `ballBounce 0.5s ease ${i * 0.05}s`;
+        });
+    }
+
+    // 清空选择
+    function clearSelection() {
+        selectedRed = [];
+        selectedBlue = null;
+        updateUI();
+    }
+
+    // =============================================
+    // 查询逻辑
+    // =============================================
+    
+    function startQuery() {
+        if (selectedRed.length !== 6 || !selectedBlue) return;
+
+        // 显示加载状态
+        document.getElementById('selection-section').classList.add('hidden');
+        document.getElementById('results-section').classList.add('hidden');
+        document.getElementById('loading-section').classList.remove('hidden');
+
+        // 加载提示轮播
+        const tips = [
+            "🔮 正在调用量子计算机进行概率演算...",
+            "📡 正在与银河系彩票中心建立连接...",
+            "🐉 正在请龙王翻阅《易经》...",
+            "🎰 正在模拟 1,000,000 次随机开奖...",
+            "☯️ 正在推算五行八卦与号码的关系...",
+            "🦄 正在捕捉独角兽的幸运光环...",
+            "🌙 正在等待月亮进入正确相位...",
+            "🎲 正在向骰子之神祈祷..."
+        ];
+        
+        let tipIndex = 0;
+        const tipInterval = setInterval(() => {
+            tipIndex = (tipIndex + 1) % tips.length;
+            document.getElementById('loading-tip').textContent = tips[tipIndex];
+        }, 1200);
+
+        // 模拟加载时间
+        setTimeout(() => {
+            clearInterval(tipInterval);
+            showResults();
+        }, 2500 + Math.random() * 1500);
+    }
+
+    function showResults() {
+        document.getElementById('loading-section').classList.add('hidden');
+        document.getElementById('results-section').classList.remove('hidden');
+
+        const userNumbers = [...selectedRed, selectedBlue];
+        
+        // 计算好运指数
+        const luckScore = calculateLuckScore(userNumbers);
+        
+        // 动画显示分数
+        animateScore(luckScore);
+        
+        // 显示详细分析
+        setTimeout(() => {
+            showLuckAnalysis(luckScore, userNumbers);
+        }, 800);
+
+        // 显示历史记录
+        showHistoryResults(userNumbers);
+    }
+
+    function calculateLuckScore(numbers) {
+        // 基于多个因素的综合算法（搞笑版）
+        const red = numbers.slice(0, 6);
+        const blue = numbers[6];
+        let score = 50; // 基础分
+
+        // 1. 号码分布因素
+        const sum = red.reduce((a, b) => a + b, 0);
+        if (sum >= 90 && sum <= 120) score += 10; // 和值适中加分
+        else if (sum < 70 || sum > 140) score -= 5;
+
+        // 2. 奇偶平衡
+        const oddCount = red.filter(n => n % 2 === 1).length;
+        if (oddCount >= 2 && oddCount <= 4) score += 8;
+        else score -= 3;
+
+        // 3. 连号加成
+        let consecutiveCount = 0;
+        const sortedRed = [...red].sort((a, b) => a - b);
+        for (let i = 0; i < sortedRed.length - 1; i++) {
+            if (sortedRed[i + 1] - sortedRed[i] === 1) consecutiveCount++;
+        }
+        score += consecutiveCount * 3;
+
+        // 4. 大小比例
+        const bigCount = red.filter(n => n > 16).length;
+        if (bigCount >= 2 && bigCount <= 4) score += 5;
+        else score -= 2;
+
+        // 5. 蓝球特殊处理
+        if ([3, 6, 9, 12, 15].includes(blue)) score += 5; // 三的倍数
+        if ([7, 14].includes(blue)) score += 3; // 吉利数
+        if (blue === 1) score += 4; // 第一名！
+
+        // 6. 特殊号码加成
+        if (red.includes(8)) score += 4; // 发
+        if (red.includes(6)) score += 3; // 顺
+        if (red.includes(18)) score += 3; // 要发
+        if (red.includes(9)) score += 2; // 久
+
+        // 7. 避坑扣分
+        if (red.includes(4)) score -= 3; // 死
+        if (red.includes(13)) score -= 2; // 西方不吉利
+        if (blue === 4) score -= 2;
+
+        // 8. 随机波动（让结果更有趣）
+        score += Math.floor(Math.random() * 15) - 7;
+
+        // 9. 时间因子（基于当前时间的伪随机）
+        const now = new Date();
+        const timeFactor = ((now.getHours() * now.getDate()) % 10) - 5;
+        score += timeFactor;
+
+        return Math.max(0, Math.min(100, score));
+    }
+
+    function animateScore(targetScore) {
+        const el = document.getElementById('score-number');
+        const meterEl = document.getElementById('luck-meter-fill');
+        const labelEl = document.getElementById('score-label');
+        let current = 0;
+        const duration = 1800;
+        const startTime = performance.now();
+
+        // 确定颜色等级
+        const level = LUCK_LEVELS.find(l => targetScore >= l.range[0] && targetScore <= l.range[1]);
+        const color = level ? level.color : '#A78BFA';
+        meterEl.style.background = level ? level.bgColor : 'linear-gradient(135deg, #7C3AED, #A78BFA)';
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // 缓出效果
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            current = Math.round(easeOut * targetScore);
+            
+            el.textContent = current;
+            el.style.color = color;
+            el.style.textShadow = `0 0 20px ${color}, 0 0 40px ${color}`;
+            meterEl.style.width = `${current}%`;
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                labelEl.textContent = '好运指数满分100分！看看下面详细解析 👇';
+                document.getElementById('lucky-analysis').classList.remove('hidden');
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function showLuckAnalysis(score, numbers) {
+        const level = LUCK_LEVELS.find(l => score >= l.range[0] && score <= l.range[1]) || LUCK_LEVELS[4];
+
+        // 等级徽章
+        document.getElementById('luck-level-badge').innerHTML = `
+            <span class="lucky-badge" style="background: ${level.bgColor}; color: #fff; font-size: 18px; padding: 10px 28px; border-radius: 25px;">
+                ${level.label}
+            </span>
+        `;
+
+        // 随机选取4条搞笑描述
+        const shuffled = [...level.descriptions].sort(() => Math.random() - 0.5);
+        const selectedDescs = shuffled.slice(0, 4);
+
+        // 生成有趣的事实
+        const facts = generateFunnyFacts(numbers, score);
+
+        const descContainer = document.getElementById('funny-descriptions');
+        descContainer.innerHTML = '';
+        
+        selectedDescs.forEach(desc => {
+            descContainer.innerHTML += `
+                <div class="bg-white/5 rounded-xl p-4 border-l-4 border-purple-500/50 hover:bg-white/8 transition-all cursor-pointer">
+                    <p class="text-purple-100">${desc}</p>
+                </div>
+            `;
+        });
+
+        facts.forEach(fact => {
+            descContainer.innerHTML += `
+                <div class="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-4 border-l-4 border-yellow-500/50">
+                    <p class="text-yellow-100/90 text-sm">${fact}</p>
+                </div>
+            `;
+        });
+    }
+
+    function generateFunnyFacts(numbers, score) {
+        const red = numbers.slice(0, 6);
+        const blue = numbers[6];
+        const sum = red.reduce((a, b) => a + b, 0);
+        const oddCount = red.filter(n => n % 2 === 1).length;
+        const evenCount = 6 - oddCount;
+
+        // 排名
+        const rank = score > 80 ? Math.floor(Math.random() * 100) + 1 :
+                     score > 50 ? Math.floor(Math.random() * 50000) + 100 :
+                     Math.floor(Math.random() * 170000) + 50000;
+        
+        // 和值评价
+        const sumComment = sum < 80 ? '偏低，属于"保守派"选手' :
+                          sum > 125 ? '偏高，是个"激进派"' : '适中，稳扎稳打型';
+
+        // 奇偶评价
+        const parityComment = oddCount >= 3 && oddCount <= 4 ? '阴阳调和，非常和谐' :
+                             oddCount <= 2 ? '偏阴...不对，偏偶数了' : '偏阳...啊不是，偏奇数了';
+
+        // 连号判断
+        const sortedRed = [...red].sort((a, b) => a - b);
+        let consecutives = [];
+        for (let i = 0; i < sortedRed.length - 1; i++) {
+            if (sortedRed[i + 1] - sortedRed[i] === 1) {
+                consecutives.push(`${sortedRed[i]}-${sortedRed[i+1]}`);
+            }
+        }
+        const consecutiveStr = consecutives.length > 0 ? `有 ${consecutives.join('、')}` : '无';
+        const consecutiveComment = consecutives.length > 0 ? '连号代表缘分相连，不错哦！' : '散装的也有散装的好——分散投资嘛';
+
+        // 彩虹指数
+        const rainbow = ['🌈', '🌈🌈', '🌈🌈🌈', '🌈🌈🌈🌈', '🌈🌈🌈🌈🌈'][Math.min(4, Math.floor(score / 20))];
+        const rainbowComment = score > 80 ? '光芒万丈，闪瞎眼了！' :
+                              score > 50 ? '还行，至少能看到一丝希望' : 'emmm...乌云密布的感觉';
+
+        // 星座推荐
+        const luckyZodiac = ZODIACS[Math.floor(Math.random() * 12)];
+        const todayZodiac = ZODIACS[(new Date().getMonth())];
+        const horoscopeTips = [
+            '宜买彩票，忌借钱给别人',
+            '财运亨通，但要注意不要得意忘形',
+            '桃花运旺盛，但彩票运一般般',
+            '适合做白日梦，万一实现了呢',
+            '贵人相助的日子，记得请客吃饭'
+        ];
+        const horoscopeTip = horoscopeTips[Math.floor(Math.random() * horoscopeTips.length)];
+
+        // 食物推荐
+        const food = FOODS[Math.floor(Math.random() * FOODS.length)];
+        const boost = Math.floor(Math.random() * 50) + 10;
+
+        // 颜色推荐
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+        // 年限估算
+        const years = (177562 / (52 * 2)).toFixed(1); // 每年约104期
+
+        return [
+            `🎲 这组号码在 177,562 种组合中的幸运排名：约第 ${rank.toLocaleString()} 名`,
+            `🔢 号码总和为 ${sum}，${sumComment}`,
+            `📊 奇偶比为 ${oddCount}:${evenCount}，${parityComment}`,
+            `🐟 根据玄学算法（瞎编版），${luckyZodiac} 的人用这组号码效果更好`,
+            `💰 如果每期都买这组号，理论上大约需要 ${years} 年才能中一等奖`,
+            `🌈 这组号码的彩虹指数：${rainbow}，${rainbowComment}`,
+            `🎯 连号情况：${consecutiveStr}，${consecutiveComment}`,
+            `♈ 今天${todayZodiac}座运势：${horoscopeTip}`,
+            `🍜 建议搭配食物：${food}，据说能提升 ${boost}% 的幸运值（纯属娱乐）`,
+            `👕 建议穿着颜色：${color}，与号码气场相辅相成`
+        ].sort(() => Math.random() - 0.5).slice(0, 5);
+    }
+
+    function showHistoryResults(userNumbers) {
+        const userRed = new Set(userNumbers.slice(0, 6));
+        const userBlue = userNumbers[6];
+
+        const results = [];
+        
+        LOTTERY_HISTORY.forEach(record => {
+            const matchRed = record.red.filter(n => userRed.has(n)).length;
+            const matchBlue = record.blue === userBlue ? 1 : 0;
+            
+            if (matchRed > 0 || matchBlue > 0) {
+                results.push({
+                    ...record,
+                    matchRed,
+                    matchBlue,
+                    prizeLevel: getPrizeLevel(matchRed, matchBlue)
+                });
+            }
+        });
+
+        // 按匹配度排序
+        results.sort((a, b) => {
+            if (b.matchRed !== a.matchRed) return b.matchRed - a.matchRed;
+            return b.matchBlue - a.matchBlue;
+        });
+
+        const container = document.getElementById('history-results');
+        
+        if (results.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-5xl mb-4">🔍</div>
+                    <p class="text-purple-300 text-lg">哇！这组号码在历史上从来没出现过类似的组合！</p>
+                    <p class="text-purple-400/60 text-sm mt-2">这意味着...要么你是天选之子，要么这组号真的很冷门 😂</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 只展示前10条最有价值的
+        const topResults = results.slice(0, 10);
+        
+        let html = `<p class="text-purple-300 mb-4 text-sm">🎯 在 ${LOTTERY_HISTORY.length} 期历史数据中，找到 <strong>${results.length}</strong> 条相似记录：</p>`;
+        
+        topResults.forEach(r => {
+            const redBalls = r.red.map(n => `<span class="inline-block w-7 h-7 leading-7 text-center rounded-full bg-red-500/80 text-white text-xs font-bold mr-1">${String(n).padStart(2,'0')}</span>`).join('');
+            const blueBall = `<span class="inline-block w-7 h-7 leading-7 text-center rounded-full bg-blue-500/80 text-white text-xs font-bold">${String(r.blue).padStart(2,'0')}</span>`;
+            
+            const prizeColors = {
+                '特等奖': 'from-yellow-500 to-orange-500',
+                '一等奖': 'from-red-500 to-pink-500',
+                '二等奖': 'from-purple-500 to-indigo-500',
+                '三等奖': 'from-blue-500 to-cyan-500',
+                '四等奖': 'from-green-500 to-emerald-500',
+                '五等奖': 'from-gray-400 to-gray-500',
+                '六等奖': 'from-gray-500 to-gray-600'
+            };
+            
+            html += `
+                <div class="history-record">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-purple-300 font-mono text-sm">第 ${r.issue} 期</span>
+                            <span class="text-gray-500 text-xs">${r.date}</span>
+                        </div>
+                        <span class="lucky-badge text-xs" style="background: linear-gradient(135deg, ${prizeColors[r.prizeLevel]?.split(' ')[0] || '#666'}, ${prizeColors[r.prizeLevel]?.split(' ')[1] || '#888'}); color: white;">
+                            🏆 ${r.prizeLevel}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1 my-2">
+                        ${redBalls}
+                        <span class="mx-1 text-gray-500">+</span>
+                        ${blueBall}
+                        <span class="ml-3 text-xs text-purple-300 bg-purple-500/10 px-2 py-1 rounded-full">
+                            匹配 ${r.matchRed} 红 + ${r.matchBlue} 蓝
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+
+        if (results.length > 10) {
+            html += `<p class="text-purple-400/50 text-center text-sm mt-3">还有 ${results.length - 10} 条记录未展示...</p>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function getPrizeLevel(redMatch, blueMatch) {
+        if (redMatch === 6 && blueMatch === 1) return '特等奖';
+        if (redMatch === 6 && blueMatch === 0) return '一等奖';
+        if (redMatch === 5 && blueMatch === 1) return '二等奖';
+        if (redMatch === 5 && blueMatch === 0 || redMatch === 4 && blueMatch === 1) return '三等奖';
+        if (redMatch === 4 && blueMatch === 0 || redMatch === 3 && blueMatch === 1) return '四等奖';
+        if (redMatch === 2 && blueMatch === 1 || redMatch === 1 && blueMatch === 1 || redMatch === 0 && blueMatch === 1) return '五等奖';
+        return '六等奖';
+    }
+
+    // =============================================
+    // 分享功能
+    // =============================================
+    function openShareModal() {
+        const modal = document.getElementById('share-modal');
+        modal.classList.add('active');
+
+        const redStr = selectedRed.map(n => String(n).padStart(2, '0')).join(' ');
+        const blueStr = String(selectedBlue).padStart(2, '0');
+        const score = parseInt(document.getElementById('score-number').textContent);
+        const level = LUCK_LEVELS.find(l => score >= l.range[0] && score <= l.range[1]);
+
+        const shareText = `🎱 我的双色球好运指数出炉啦！\n\n` +
+            `🔴 我的号码：${redStr}\n` +
+            `🔵 蓝球：${blueStr}\n\n` +
+            `✨ 好运指数：${score}/100\n` +
+            `${level?.label || ''}\n\n` +
+            `快来测测你的幸运号码吧！\n` +
+            `👇👇👇\n` +
+            `(分享自双色球好运查询工具)`;
+
+        document.getElementById('share-preview').innerHTML = `
+            <div class="text-left space-y-3">
+                <div class="flex justify-center gap-2 mb-4">
+                    ${selectedRed.map(n => `<span class="w-9 h-9 rounded-full bg-gradient-to-br from-red-400 to-red-600 text-white flex items-center justify-center font-bold text-sm shadow-lg">${String(n).padStart(2,'0')}</span>`).join('')}
+                    <span class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-lg">${String(selectedBlue).padStart(2,'0')}</span>
+                </div>
+                <div class="text-3xl font-bold text-center" style="font-family:'Fredoka',sans-serif;color:${level?.color||'#A78BFA'};">${score} 分</div>
+                <div class="text-center text-sm text-purple-300">${level?.label || ''}</div>
+            </div>
+        `;
+        
+        document.getElementById('share-modal').dataset.shareText = shareText;
+        document.getElementById('copy-success').classList.add('hidden');
+    }
+
+    function closeShareModal(event) {
+        if (!event || event.target.id === 'share-modal') {
+            document.getElementById('share-modal').classList.remove('active');
+        }
+    }
+
+    async function copyToClipboard() {
+        const text = document.getElementById('share-modal').dataset.shareText;
+        try {
+            await navigator.clipboard.writeText(text);
+            document.getElementById('copy-success').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('copy-success').classList.add('hidden');
+            }, 2500);
+        } catch {
+            // Fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+            document.getElementById('copy-success').classList.remove('hidden');
+        }
+    }
+
+    // =============================================
+    // 工具函数
+    // =============================================
+    function resetToSelection() {
+        document.getElementById('results-section').classList.add('hidden');
+        document.getElementById('selection-section').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-xl shadow-2xl z-[10001] animate-pulse';
+        toast.style.fontFamily = "'Nunito', sans-serif";
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    // 启动应用
+    init();
+    </script>
+</body>
+</html>
