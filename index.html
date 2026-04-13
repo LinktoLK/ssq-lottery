@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎱 双色球好运查询 - 你的幸运号码能中吗？</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="ssq-history-data.js"></script>
+    <script src="ssq-history-data.js" onerror="console.warn('⚠️ 历史数据文件加载失败，将使用空数据'); window.LOTTERY_HISTORY = window.LOTTERY_HISTORY || [];"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -49,7 +49,7 @@
                 transparent 1px,
                 transparent 2px
             );
-            z-index: 9999;
+            z-index: 1;
         }
 
         /* Neon Glow Effects */
@@ -99,6 +99,7 @@
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             user-select: none;
             position: relative;
+            z-index: 10;
         }
 
         .ball-red {
@@ -123,12 +124,13 @@
 
         .ball:hover {
             transform: scale(1.18) translateY(-3px);
-            z-index: 10;
+            z-index: 100;
         }
 
         .ball.selected {
             transform: scale(1.22) translateY(-5px);
             animation: ballBounce 0.5s ease;
+            z-index: 100;
         }
 
         .ball.selected::after {
@@ -162,6 +164,8 @@
             gap: 8px;
             justify-content: center;
             padding: 12px;
+            position: relative;
+            z-index: 10;
         }
 
         /* Selected Display */
@@ -248,6 +252,8 @@
             border: 1px solid rgba(124, 58, 237, 0.2);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
 
         .result-card:hover {
@@ -491,7 +497,42 @@
                     <label class="text-red-300 font-semibold text-lg">红球区（选 6 个）</label>
                     <span id="red-count" class="text-sm bg-red-500/20 text-red-300 px-3 py-1 rounded-full font-medium">已选 0 / 6</span>
                 </div>
-                <div id="red-balls-container" class="ball-grid"></div>
+                <div id="red-balls-container" class="ball-grid">
+                    <!-- 静态渲染红球 01-33 -->
+                    <div class="ball ball-red" data-num="1" onclick="toggleRedBall(1)">01</div>
+                    <div class="ball ball-red" data-num="2" onclick="toggleRedBall(2)">02</div>
+                    <div class="ball ball-red" data-num="3" onclick="toggleRedBall(3)">03</div>
+                    <div class="ball ball-red" data-num="4" onclick="toggleRedBall(4)">04</div>
+                    <div class="ball ball-red" data-num="5" onclick="toggleRedBall(5)">05</div>
+                    <div class="ball ball-red" data-num="6" onclick="toggleRedBall(6)">06</div>
+                    <div class="ball ball-red" data-num="7" onclick="toggleRedBall(7)">07</div>
+                    <div class="ball ball-red" data-num="8" onclick="toggleRedBall(8)">08</div>
+                    <div class="ball ball-red" data-num="9" onclick="toggleRedBall(9)">09</div>
+                    <div class="ball ball-red" data-num="10" onclick="toggleRedBall(10)">10</div>
+                    <div class="ball ball-red" data-num="11" onclick="toggleRedBall(11)">11</div>
+                    <div class="ball ball-red" data-num="12" onclick="toggleRedBall(12)">12</div>
+                    <div class="ball ball-red" data-num="13" onclick="toggleRedBall(13)">13</div>
+                    <div class="ball ball-red" data-num="14" onclick="toggleRedBall(14)">14</div>
+                    <div class="ball ball-red" data-num="15" onclick="toggleRedBall(15)">15</div>
+                    <div class="ball ball-red" data-num="16" onclick="toggleRedBall(16)">16</div>
+                    <div class="ball ball-red" data-num="17" onclick="toggleRedBall(17)">17</div>
+                    <div class="ball ball-red" data-num="18" onclick="toggleRedBall(18)">18</div>
+                    <div class="ball ball-red" data-num="19" onclick="toggleRedBall(19)">19</div>
+                    <div class="ball ball-red" data-num="20" onclick="toggleRedBall(20)">20</div>
+                    <div class="ball ball-red" data-num="21" onclick="toggleRedBall(21)">21</div>
+                    <div class="ball ball-red" data-num="22" onclick="toggleRedBall(22)">22</div>
+                    <div class="ball ball-red" data-num="23" onclick="toggleRedBall(23)">23</div>
+                    <div class="ball ball-red" data-num="24" onclick="toggleRedBall(24)">24</div>
+                    <div class="ball ball-red" data-num="25" onclick="toggleRedBall(25)">25</div>
+                    <div class="ball ball-red" data-num="26" onclick="toggleRedBall(26)">26</div>
+                    <div class="ball ball-red" data-num="27" onclick="toggleRedBall(27)">27</div>
+                    <div class="ball ball-red" data-num="28" onclick="toggleRedBall(28)">28</div>
+                    <div class="ball ball-red" data-num="29" onclick="toggleRedBall(29)">29</div>
+                    <div class="ball ball-red" data-num="30" onclick="toggleRedBall(30)">30</div>
+                    <div class="ball ball-red" data-num="31" onclick="toggleRedBall(31)">31</div>
+                    <div class="ball ball-red" data-num="32" onclick="toggleRedBall(32)">32</div>
+                    <div class="ball ball-red" data-num="33" onclick="toggleRedBall(33)">33</div>
+                </div>
             </div>
 
             <!-- Blue Balls -->
@@ -500,7 +541,25 @@
                     <label class="text-blue-300 font-semibold text-lg">蓝球区（选 1 个）</label>
                     <span id="blue-count" class="text-sm bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full font-medium">已选 0 / 1</span>
                 </div>
-                <div id="blue-balls-container" class="ball-grid"></div>
+                <div id="blue-balls-container" class="ball-grid">
+                    <!-- 静态渲染蓝球 01-16 -->
+                    <div class="ball ball-blue" data-num="1" onclick="toggleBlueBall(1)">01</div>
+                    <div class="ball ball-blue" data-num="2" onclick="toggleBlueBall(2)">02</div>
+                    <div class="ball ball-blue" data-num="3" onclick="toggleBlueBall(3)">03</div>
+                    <div class="ball ball-blue" data-num="4" onclick="toggleBlueBall(4)">04</div>
+                    <div class="ball ball-blue" data-num="5" onclick="toggleBlueBall(5)">05</div>
+                    <div class="ball ball-blue" data-num="6" onclick="toggleBlueBall(6)">06</div>
+                    <div class="ball ball-blue" data-num="7" onclick="toggleBlueBall(7)">07</div>
+                    <div class="ball ball-blue" data-num="8" onclick="toggleBlueBall(8)">08</div>
+                    <div class="ball ball-blue" data-num="9" onclick="toggleBlueBall(9)">09</div>
+                    <div class="ball ball-blue" data-num="10" onclick="toggleBlueBall(10)">10</div>
+                    <div class="ball ball-blue" data-num="11" onclick="toggleBlueBall(11)">11</div>
+                    <div class="ball ball-blue" data-num="12" onclick="toggleBlueBall(12)">12</div>
+                    <div class="ball ball-blue" data-num="13" onclick="toggleBlueBall(13)">13</div>
+                    <div class="ball ball-blue" data-num="14" onclick="toggleBlueBall(14)">14</div>
+                    <div class="ball ball-blue" data-num="15" onclick="toggleBlueBall(15)">15</div>
+                    <div class="ball ball-blue" data-num="16" onclick="toggleBlueBall(16)">16</div>
+                </div>
             </div>
 
             <!-- Selected Display -->
@@ -735,11 +794,47 @@
     // 初始化
     // =============================================
     function init() {
-        createParticles();
-        renderRedBalls();
-        renderBlueBalls();
-        bindEvents();
+        console.log('🎱 开始初始化双色球页面...');
+        
+        try {
+            createParticles();
+            console.log('✅ 粒子效果创建完成');
+            
+            renderRedBalls();
+            console.log('✅ 红球状态更新完成');
+            
+            renderBlueBalls();
+            console.log('✅ 蓝球状态更新完成');
+            
+            bindEvents();
+            console.log('✅ 事件绑定完成');
+            
+            console.log('🎱 初始化完成！');
+            console.log(`📊 历史数据: ${LOTTERY_HISTORY.length} 期`);
+        } catch (error) {
+            console.error('❌ 初始化失败:', error);
+            // 即使出错也不阻止页面使用
+        }
     }
+
+    // 启动应用 - 使用多种方式确保执行
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        // DOM 已加载，延迟一小段时间确保所有资源就绪
+        setTimeout(init, 100);
+    }
+    
+    // 备用：window.onload 也能触发
+    window.addEventListener('load', function() {
+        console.log('📦 页面完全加载');
+        // 如果还没初始化过，再尝试一次
+        const redContainer = document.getElementById('red-balls-container');
+        if (redContainer && !redContainer.querySelector('.ball')) {
+            console.log('⚠️ 检测到球未渲染，重新初始化...');
+            init();
+        }
+    });
 
     // 创建背景粒子
     function createParticles() {
@@ -763,30 +858,34 @@
         }
     }
 
-    // 渲染红球选择器
+    // 渲染红球选择状态（更新已有元素的样式）
     function renderRedBalls() {
         const container = document.getElementById('red-balls-container');
-        container.innerHTML = '';
-        for (let i = 1; i <= 33; i++) {
-            const ball = document.createElement('div');
-            ball.className = `ball ball-red${selectedRed.includes(i) ? ' selected' : ''}`;
-            ball.textContent = String(i).padStart(2, '0');
-            ball.onclick = () => toggleRedBall(i);
-            container.appendChild(ball);
-        }
+        if (!container) return;
+        const balls = container.querySelectorAll('.ball-red');
+        balls.forEach(ball => {
+            const num = parseInt(ball.dataset.num);
+            if (selectedRed.includes(num)) {
+                ball.classList.add('selected');
+            } else {
+                ball.classList.remove('selected');
+            }
+        });
     }
 
-    // 渲染蓝球选择器
+    // 渲染蓝球选择状态（更新已有元素的样式）
     function renderBlueBalls() {
         const container = document.getElementById('blue-balls-container');
-        container.innerHTML = '';
-        for (let i = 1; i <= 16; i++) {
-            const ball = document.createElement('div');
-            ball.className = `ball ball-blue${selectedBlue === i ? ' selected' : ''}`;
-            ball.textContent = String(i).padStart(2, '0');
-            ball.onclick = () => toggleBlueBall(i);
-            container.appendChild(ball);
-        }
+        if (!container) return;
+        const balls = container.querySelectorAll('.ball-blue');
+        balls.forEach(ball => {
+            const num = parseInt(ball.dataset.num);
+            if (selectedBlue === num) {
+                ball.classList.add('selected');
+            } else {
+                ball.classList.remove('selected');
+            }
+        });
     }
 
     // 切换红球选择
@@ -1319,8 +1418,8 @@
         setTimeout(() => toast.remove(), 2000);
     }
 
-    // 启动应用
-    init();
+    // 启动应用（已移至上方 DOMContentLoaded 事件中）
+    // 原来的直接调用: init();
     </script>
 </body>
 </html>
