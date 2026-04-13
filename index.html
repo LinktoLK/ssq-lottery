@@ -656,13 +656,10 @@
     <script>
     // =============================================
     // 双色球历史数据
-    // 数据从 ssq-history-data.js 外部文件加载
-    // 如果外部数据未加载成功，将显示提示信息
+    // 数据从 ssq-history-data.js 外部文件加载（使用 const 声明）
+    // 如果外部数据未加载成功，script 标签的 onerror 回调已处理为空数组
     // =============================================
-    if (typeof LOTTERY_HISTORY === 'undefined' || !LOTTERY_HISTORY || LOTTERY_HISTORY.length === 0) {
-        var LOTTERY_HISTORY = [];
-    }
-    console.log(`📊 已加载 ${LOTTERY_HISTORY.length} 期历史开奖数据`);
+    console.log(`📊 已加载 ${typeof LOTTERY_HISTORY !== 'undefined' ? LOTTERY_HISTORY.length : 0} 期历史开奖数据`);
 
     // =============================================
     // 搞笑好运描述数据库
@@ -1418,12 +1415,7 @@
         setTimeout(() => toast.remove(), 2000);
     }
 
-    // 启动应用
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        setTimeout(init, 50);
-    }
+    // init() 调用已在脚本上方完成，此处不再重复
     </script>
 </body>
 </html>
