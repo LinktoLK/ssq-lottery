@@ -33,7 +33,7 @@
             overflow-x: hidden;
         }
 
-        /* CRT Scanline Effect */
+        /* CRT Scanline Effect - 使用负z-index确保不遮挡任何交互元素 */
         body::before {
             content: '';
             position: fixed;
@@ -49,7 +49,7 @@
                 transparent 1px,
                 transparent 2px
             );
-            z-index: 1;
+            z-index: -1;
         }
 
         /* Neon Glow Effects */
@@ -482,7 +482,7 @@
         </p>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 pb-16 relative z-10">
+    <main class="max-w-4xl mx-auto px-4 pb-16 relative" style="z-index: 5;">
         <!-- Number Selection Section -->
         <section id="selection-section" class="result-card mb-8 neon-glow">
             <h2 class="text-2xl font-bold text-center mb-6" style="font-family: 'Fredoka', sans-serif;">
@@ -1418,8 +1418,12 @@
         setTimeout(() => toast.remove(), 2000);
     }
 
-    // 启动应用（已移至上方 DOMContentLoaded 事件中）
-    // 原来的直接调用: init();
+    // 启动应用
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        setTimeout(init, 50);
+    }
     </script>
 </body>
 </html>
