@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎱 双色球好运查询 - 你的幸运号码能中吗？</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="ssq-history-data.js" onerror="console.warn('⚠️ 历史数据文件加载失败，将使用空数据'); window.LOTTERY_HISTORY = window.LOTTERY_HISTORY || [];"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -586,6 +588,16 @@
 
         <!-- Results Section (Hidden by default) -->
         <section id="results-section" class="hidden space-y-6">
+            <!-- My Numbers Card - 结果页展示所选号码 -->
+            <div class="result-card text-center">
+                <h2 class="text-xl font-bold mb-4" style="font-family: 'Fredoka', sans-serif; color: var(--secondary);">
+                    🎯 我的号码
+                </h2>
+                <div id="result-numbers-display" class="selected-balls has-balls mx-auto" style="max-width: fit-content;">
+                    <!-- 动态填充 -->
+                </div>
+            </div>
+
             <!-- Luck Index Card -->
             <div class="result-card">
                 <h2 class="text-2xl font-bold text-center mb-6 neon-text-red" style="font-family: 'Fredoka', sans-serif;">
@@ -618,11 +630,55 @@
             <!-- Action Buttons -->
             <div class="flex flex-wrap gap-4 justify-center pt-4">
                 <button id="share-btn" class="btn-primary flex items-center gap-2">
-                    📤 分享我的好运
+                    📸 生成分享图
                 </button>
                 <button id="re-query-btn" class="btn-secondary flex items-center gap-2">
                     🔄 换一组号码
                 </button>
+            </div>
+
+            <!-- Screenshot Preview Area -->
+            <div id="screenshot-preview-area" class="hidden mt-6">
+                <div class="result-card text-center overflow-hidden" style="background: linear-gradient(135deg, #1a1a3e 0%, #0f0f2d 50%, #1a0a2e 100%); border: 2px solid rgba(124,58,237,0.4);">
+                    <div id="screenshot-card" class="py-8 px-6 relative">
+                        <!-- 装饰背景 -->
+                        <div class="absolute inset-0 opacity-5 pointer-events-none" style="background: radial-gradient(circle at 20% 30%, #7C3AED 0%, transparent 50%), radial-gradient(circle at 80% 70%, #F43F5E 0%, transparent 50%);"></div>
+                        
+                        <div class="relative z-10">
+                            <!-- 标题 -->
+                            <h3 class="text-2xl font-bold mb-1 neon-text" style="font-family:'Fredoka',sans-serif;">🎱 双色球好运查询</h3>
+                            <p class="text-purple-300/60 text-xs mb-5">✨ 命运的数字密码 ✨</p>
+                            
+                            <!-- 号码区 -->
+                            <div class="mb-4">
+                                <p class="text-sm text-purple-300/80 mb-2">🔮 我的幸运号码</p>
+                                <div id="ss-numbers" class="flex justify-center gap-2 flex-wrap"></div>
+                            </div>
+                            
+                            <!-- 分数区 -->
+                            <div class="my-5 py-4 rounded-xl" style="background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);">
+                                <div id="ss-score" class="text-6xl font-bold" style="font-family:'Fredoka',sans-serif;">--</div>
+                                <div id="ss-level-badge" class="mt-2 inline-block px-4 py-1 rounded-full text-sm font-bold"></div>
+                                <p class="text-purple-300/50 text-xs mt-2">AI 神算子 · 好运指数报告</p>
+                            </div>
+                            
+                            <!-- 二维码 + 提示 -->
+                            <div class="flex items-center justify-center gap-6 mt-4">
+                                <div id="ss-qrcode" class="bg-white p-2 rounded-lg"></div>
+                                <div class="text-left text-purple-200/70 text-xs leading-relaxed">
+                                    <p>📱 扫码测你的好运</p>
+                                    <p>看看你能中几等奖？</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="flex flex-wrap gap-3 justify-center pb-6 pt-2">
+                        <button onclick="downloadScreenshot()" class="btn-primary py-3 text-base">💾 保存图片</button>
+                        <button onclick="closeScreenshotPreview()" class="btn-secondary py-3 text-base">关闭预览</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1018,6 +1074,17 @@
 
         const userNumbers = [...selectedRed, selectedBlue];
         
+        // 在结果页顶部展示所选号码
+        const resultNumbersEl = document.getElementById('result-numbers-display');
+        let html = '';
+        selectedRed.forEach(n => {
+            html += `<div class="ball ball-red">${String(n).padStart(2, '0')}</div>`;
+        });
+        if (selectedBlue !== null) {
+            html += `<div class="ball ball-blue">${String(selectedBlue).padStart(2, '0')}</div>`;
+        }
+        resultNumbersEl.innerHTML = html;
+        
         // 计算好运指数
         const luckScore = calculateLuckScore(userNumbers);
         
@@ -1334,66 +1401,109 @@
     }
 
     // =============================================
-    // 分享功能
+    // 截图分享功能（含二维码）
     // =============================================
+    
+    // 当前页面 URL（自动检测）
+    function getPageUrl() {
+        return window.location.href;
+    }
+
+    // 打开截图预览
     function openShareModal() {
-        const modal = document.getElementById('share-modal');
-        modal.classList.add('active');
+        const score = parseInt(document.getElementById('score-number').textContent) || 0;
+        const level = LUCK_LEVELS.find(l => score >= l.range[0] && score <= l.range[1]) || LUCK_LEVELS[4];
 
-        const redStr = selectedRed.map(n => String(n).padStart(2, '0')).join(' ');
-        const blueStr = String(selectedBlue).padStart(2, '0');
-        const score = parseInt(document.getElementById('score-number').textContent);
-        const level = LUCK_LEVELS.find(l => score >= l.range[0] && score <= l.range[1]);
+        // 1. 填充号码
+        const ssNumbersEl = document.getElementById('ss-numbers');
+        let numHtml = '';
+        selectedRed.forEach(n => {
+            numHtml += `<span class="w-11 h-11 rounded-full bg-gradient-to-br from-red-400 to-red-600 text-white flex items-center justify-center font-bold text-base shadow-lg" style="font-family:'Fredoka',sans-serif;box-shadow:0 3px 10px rgba(239,68,68,0.5),inset 0 -2px 6px rgba(0,0,0,0.2),inset 0 2px 6px rgba(255,255,255,0.3);">${String(n).padStart(2,'0')}</span>`;
+        });
+        if (selectedBlue !== null) {
+            numHtml += `<span class="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold text-base shadow-lg ml-1" style="font-family:'Fredoka',sans-serif;box-shadow:0 3px 10px rgba(59,130,246,0.5),inset 0 -2px 6px rgba(0,0,0,0.2),inset 0 2px 6px rgba(255,255,255,0.3);">${String(selectedBlue).padStart(2,'0')}</span>`;
+        }
+        ssNumbersEl.innerHTML = numHtml;
 
-        const shareText = `🎱 我的双色球好运指数出炉啦！\n\n` +
-            `🔴 我的号码：${redStr}\n` +
-            `🔵 蓝球：${blueStr}\n\n` +
-            `✨ 好运指数：${score}/100\n` +
-            `${level?.label || ''}\n\n` +
-            `快来测测你的幸运号码吧！\n` +
-            `👇👇👇\n` +
-            `(分享自双色球好运查询工具)`;
+        // 2. 填充分数
+        const ssScoreEl = document.getElementById('ss-score');
+        ssScoreEl.textContent = score;
+        ssScoreEl.style.color = level.color;
+        ssScoreEl.style.textShadow = `0 0 20px ${level.color}, 0 0 40px ${level.color}`;
 
-        document.getElementById('share-preview').innerHTML = `
-            <div class="text-left space-y-3">
-                <div class="flex justify-center gap-2 mb-4">
-                    ${selectedRed.map(n => `<span class="w-9 h-9 rounded-full bg-gradient-to-br from-red-400 to-red-600 text-white flex items-center justify-center font-bold text-sm shadow-lg">${String(n).padStart(2,'0')}</span>`).join('')}
-                    <span class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-lg">${String(selectedBlue).padStart(2,'0')}</span>
-                </div>
-                <div class="text-3xl font-bold text-center" style="font-family:'Fredoka',sans-serif;color:${level?.color||'#A78BFA'};">${score} 分</div>
-                <div class="text-center text-sm text-purple-300">${level?.label || ''}</div>
-            </div>
-        `;
-        
-        document.getElementById('share-modal').dataset.shareText = shareText;
-        document.getElementById('copy-success').classList.add('hidden');
+        // 3. 填充等级徽章
+        const ssBadgeEl = document.getElementById('ss-level-badge');
+        ssBadgeEl.textContent = level.label;
+        ssBadgeEl.style.background = level.bgColor;
+        ssBadgeEl.style.color = '#fff';
+
+        // 4. 生成二维码
+        const qrContainer = document.getElementById('ss-qrcode');
+        qrContainer.innerHTML = '';
+        try {
+            new QRCode(qrContainer, {
+                text: getPageUrl(),
+                width: 80,
+                height: 80,
+                colorDark: '#1a1a2e',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch (e) {
+            console.warn('QRCode 生成失败:', e);
+            qrContainer.innerHTML = '<div class="w-20 h-20 flex items-center justify-center bg-gray-200 text-gray-400 text-xs">QR加载失败</div>';
+        }
+
+        // 5. 显示预览区域，滚动到底部
+        document.getElementById('screenshot-preview-area').classList.remove('hidden');
+        setTimeout(() => {
+            document.getElementById('screenshot-preview-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     }
 
     function closeShareModal(event) {
-        if (!event || event.target.id === 'share-modal') {
-            document.getElementById('share-modal').classList.remove('active');
-        }
+        document.getElementById('screenshot-preview-area').classList.add('hidden');
+    }
+    // 兼容关闭按钮调用
+    function closeScreenshotPreview() {
+        closeShareModal();
     }
 
-    async function copyToClipboard() {
-        const text = document.getElementById('share-modal').dataset.shareText;
+    // 下载截图
+    async function downloadScreenshot() {
+        const card = document.getElementById('screenshot-card');
+        const btn = event.target;
+
         try {
-            await navigator.clipboard.writeText(text);
-            document.getElementById('copy-success').classList.remove('hidden');
+            btn.textContent = '⏳ 生成中...';
+            btn.disabled = true;
+
+            const canvas = await html2canvas(card, {
+                backgroundColor: '#0f0f23',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                allowTaint: false
+            });
+
+            // 转换为图片并下载
+            const link = document.createElement('a');
+            const redStr = selectedRed.map(n => String(n).padStart(2, '0')).join('');
+            const blueStr = selectedBlue ? String(selectedBlue).padStart(2, '0') : '';
+            link.download = `双色球好运_${redStr}_${blueStr}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+
+            btn.textContent = '✅ 已保存！';
             setTimeout(() => {
-                document.getElementById('copy-success').classList.add('hidden');
-            }, 2500);
-        } catch {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.left = '-9999px';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            textarea.remove();
-            document.getElementById('copy-success').classList.remove('hidden');
+                btn.textContent = '💾 保存图片';
+                btn.disabled = false;
+            }, 2000);
+        } catch (e) {
+            console.error('截图失败:', e);
+            btn.textContent = '❌ 失败，重试';
+            btn.disabled = false;
+            alert('图片生成失败，请稍后重试~');
         }
     }
 
